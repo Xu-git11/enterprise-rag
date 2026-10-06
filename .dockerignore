@@ -1,0 +1,13 @@
+.env
+users.json
+.venv/
+.git/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.uv-cache/
+logs/
+qdrant_storage/
+docs/*.png
+docs/*.jpg

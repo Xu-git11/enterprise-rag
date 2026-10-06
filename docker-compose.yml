@@ -1,0 +1,47 @@
+services:
+  qdrant:
+    image: docker.m.daocloud.io/qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+
+  api:
+    build:
+      context: .
+    env_file:
+      - .env
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: corrective_rag_v3
+    ports:
+      - "8000:8000"
+    depends_on:
+      - qdrant
+    command: >
+      uvicorn api:app
+      --host 0.0.0.0
+      --port 8000
+
+  ui:
+    build:
+      context: .
+    env_file:
+      - .env
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: corrective_rag_v3
+    ports:
+      - "8501:8501"
+    depends_on:
+      - qdrant
+    command: >
+      streamlit run app.py
+      --server.address 0.0.0.0
+      --server.port 8501
+      --server.headless true
+      --browser.gatherUsageStats false
+
+volumes:
+  qdrant_storage:

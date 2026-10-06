@@ -1,4 +1,4 @@
-﻿"""Check demo authentication hashes and workspace binding."""
+"""Check demo authentication hashes and workspace binding."""
 
 from __future__ import annotations
 

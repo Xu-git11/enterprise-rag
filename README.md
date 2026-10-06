@@ -17,6 +17,7 @@ for embeddings, Qdrant for vector search, and Streamlit for the UI.
 - Optional hybrid vector + BM25 retrieval with Reciprocal Rank Fusion
 - Optional BGE reranker with automatic fallback
 - Page/source labels returned separately from generated answers
+- FastAPI JSON and SSE streaming APIs with API-key authorization
 - Optional Langfuse query tracing
 - Repeatable 8-question RAG benchmark
 - Secrets stored locally in `.env` and excluded from Git
@@ -105,6 +106,7 @@ uv pip install --index-url https://pypi.tuna.tsinghua.edu.cn/simple -r requireme
 ```powershell
 .\.venv\Scripts\python.exe scripts\check_apis.py
 .\.venv\Scripts\python.exe scripts\check_auth.py
+.\.venv\Scripts\python.exe scripts\check_api_service.py
 .\.venv\Scripts\python.exe scripts\check_reranker.py
 .\.venv\Scripts\python.exe scripts\check_isolation.py
 .\.venv\Scripts\python.exe scripts\check_langfuse.py
@@ -117,6 +119,10 @@ DeepSeek: OK
 SiliconFlow embedding: OK (dimension=1024)
 Qdrant: OK
 SiliconFlow reranker: OK
+API health: OK
+API authentication: OK
+API chat: OK
+API stream: OK
 Authentication: OK
 Workspace binding: OK
 Workspace isolation: OK
@@ -148,6 +154,34 @@ Upload `samples/company_policy.txt` and ask:
 
 Expected answer: `15 天`, with source labels displayed below the answer.
 
+## API and Streaming
+
+Start FastAPI:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn api:app --host 127.0.0.1 --port 8000
+```
+
+OpenAPI docs: `http://127.0.0.1:8000/docs`
+
+Endpoints: `/health`, `/v1/documents`, `/v1/chat`, `/v1/chat/stream`.
+
+API keys are mapped to workspaces in `.env`:
+
+```env
+DEMO_API_KEY=demo-api-key
+ANALYST_API_KEY=analyst-api-key
+```
+
+See `docs/api.md` for examples.
+
+## Docker Compose
+
+```powershell
+docker compose up --build
+```
+
+Ports: Qdrant `6333`, FastAPI `8000`, Streamlit `8501`. See `docs/deployment.md`.
 ## Workspace Isolation
 
 - `users.json` contains PBKDF2 password hashes and workspace IDs.
@@ -213,14 +247,18 @@ See `eval/comparison.md` for all four configurations.
 ```text
 enterprise-rag/
 |-- app.py
+|-- api.py
 |-- auth.py
 |-- rag_core.py
+|-- Dockerfile
+|-- docker-compose.yml
 |-- requirements.txt
 |-- .env.example
 |-- users.example.json
 |-- samples/
 |   \-- company_policy.txt
 |-- scripts/
+|   |-- check_api_service.py
 |   |-- check_apis.py
 |   |-- check_auth.py
 |   |-- check_isolation.py
@@ -234,11 +272,14 @@ enterprise-rag/
 |   |-- comparison.md
 |   \-- results_*.json
 |-- docs/
-|   \-- architecture.svg
+|   |-- api.md
+|   |-- architecture.svg
+|   |-- demo-script.md
+|   |-- deployment.md
+|   \-- resume-bullets.md
 |-- UPSTREAM.json
 \-- LICENSE
 ```
-
 ## Design Decisions
 
 - DeepSeek handles Chat, relevance grading, query rewriting, and grounded answer generation.

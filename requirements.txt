@@ -16,3 +16,6 @@ nest-asyncio>=1.5.0
 python-dotenv==1.2.3
 rank-bm25==0.2.2
 langfuse==2.60.10
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+python-multipart==0.0.32
