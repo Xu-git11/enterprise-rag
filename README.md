@@ -1,55 +1,65 @@
-﻿# Enterprise RAG
+# Enterprise RAG
 
-基于 Apache-2.0 开源项目 Corrective RAG 二次开发的企业知识库问答项目。
+A portfolio-ready enterprise knowledge-base assistant built from a Corrective RAG
+workflow. It uses DeepSeek for grounded generation, SiliconFlow `BAAI/bge-m3`
+for embeddings, Qdrant for vector search, and Streamlit for the UI.
 
-## 当前技术栈
+![Architecture](docs/architecture.svg)
 
-- Streamlit：Web UI
-- DeepSeek：Chat、文档相关性判断、查询改写
-- SiliconFlow：`BAAI/bge-m3` Embedding
-- Qdrant：本地向量数据库
-- LangChain / LangGraph：RAG 和状态图编排
-- Python 3.12.14
+## Highlights
 
-## 与上游版本的差异
+- Document ingestion for PDF, TXT, Markdown, and URLs
+- Chinese-aware recursive chunking
+- DeepSeek-powered relevance grading and query rewriting
+- SiliconFlow 1024-dimensional BGE-M3 embeddings
+- Local Qdrant vector storage and retrieval
+- Page/source labels returned separately from the generated answer
+- Optional BGE reranker with automatic fallback
+- Repeatable 8-question RAG benchmark
+- Secrets stored locally in `.env` and excluded from Git
+- Apache-2.0 derivative with upstream attribution
 
-上游项目：`Shubhamsaboo/awesome-llm-apps/rag_tutorials/corrective_rag`
+## Evaluation
 
-本项目当前已完成：
+The benchmark uses `samples/company_policy.txt`, which is split into 4 chunks.
+It measures whether the expected fact appears in the answer, whether a citation
+is present, and end-to-end latency.
 
-- API Key 从页面输入改为 `.env`
-- Chat 从 Anthropic 切换为 DeepSeek OpenAI-compatible API
-- Embedding 从 OpenAI 切换为 SiliconFlow `BAAI/bge-m3`
-- Qdrant 改为默认本地连接
-- 向量维度改为 BGE-M3 的 1024 维
-- 默认关闭 Tavily Web 搜索
-- 增加 API 和 Qdrant 连通性检查脚本
-- 中文切分和基础来源标签
+| Configuration | Keyword accuracy | Citation rate | Average latency |
+|---|---:|---:|---:|
+| Vector retrieval only | 100% | 100% | 1002 ms |
+| Vector retrieval + BGE reranker | 100% | 100% | 1041 ms |
 
-## 本地配置
+For this small corpus, the reranker did not improve answer quality and added
+about 39 ms per query. It is implemented but disabled by default.
 
-复制或直接编辑 `.env`：
+Detailed results:
 
-```env
-DEEPSEEK_API_KEY=你的DeepSeekKey
-DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-chat
+- `eval/comparison.md`
+- `eval/results.json`
+- `eval/results_reranker.json`
 
-SILICONFLOW_API_KEY=你的SiliconFlowKey
-SILICONFLOW_BASE_URL=https://api.siliconflow.cn/v1
-EMBEDDING_MODEL=BAAI/bge-m3
-EMBEDDING_DIMENSION=1024
+## Architecture
 
-QDRANT_URL=http://localhost:6333
-QDRANT_COLLECTION=corrective_rag
-
-ENABLE_WEB_SEARCH=false
-TAVILY_API_KEY=
+```text
+User
+  -> Streamlit document upload / question
+  -> LangGraph Corrective RAG workflow
+  -> Qdrant Top-K retrieval
+  -> optional SiliconFlow BGE reranker
+  -> DeepSeek grounded answer
+  -> answer plus document/page source labels
 ```
 
-`.env` 已写入 `.gitignore`，不要提交到 Git。
+Embedding:
 
-## 启动 Qdrant
+```text
+Text chunks -> SiliconFlow BAAI/bge-m3 -> 1024-dim vectors -> Qdrant
+```
+
+## Quick Start
+
+### 1. Start Qdrant
 
 ```powershell
 docker pull docker.m.daocloud.io/qdrant/qdrant:latest
@@ -62,7 +72,16 @@ docker run -d `
   docker.m.daocloud.io/qdrant/qdrant:latest
 ```
 
-## 创建环境
+### 2. Configure secrets
+
+Copy `.env.example` to `.env` and set:
+
+```env
+DEEPSEEK_API_KEY=...
+SILICONFLOW_API_KEY=...
+```
+
+### 3. Create the Python environment
 
 ```powershell
 uv venv --python 3.12.14 .venv
@@ -70,32 +89,121 @@ uv venv --python 3.12.14 .venv
 uv pip install --index-url https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 ```
 
-## 检查 API 连通性
+### 4. Check external services
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\check_apis.py
+.\.venv\Scripts\python.exe scripts\check_reranker.py
 ```
 
-成功时应该看到：
+Expected:
 
 ```text
 DeepSeek: OK
-SiliconFlow embedding: OK
+SiliconFlow embedding: OK (dimension=1024)
 Qdrant: OK
+SiliconFlow reranker: OK
 ```
 
-## 启动应用
+### 5. Run the UI
 
 ```powershell
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-浏览器打开：
+Open `http://127.0.0.1:8501`, upload
+`samples/company_policy.txt`, and ask:
 
 ```text
-http://localhost:8501
+正式员工入职满三年后，每年有多少天带薪年假？
 ```
 
-## License
+Expected answer: `15 天`, with source labels displayed below the answer.
 
-本项目保留上游 Apache-2.0 License。来源 commit 和原始路径记录在 `UPSTREAM.json`。
+## Reranker
+
+Enable the optional reranker in `.env`:
+
+```env
+ENABLE_RERANKER=true
+RERANKER_MODEL=BAAI/bge-reranker-v2-m3
+RETRIEVAL_TOP_K=10
+RERANK_TOP_N=5
+```
+
+When enabled, the application retrieves a wider candidate set and reranks it
+before generation. If the reranker API fails, the application falls back to the
+original retrieval order.
+
+## Benchmark
+
+```powershell
+$env:ENABLE_RERANKER='false'
+$env:EVAL_OUTPUT='results.json'
+.\.venv\Scripts\python.exe scripts\evaluate_rag.py
+
+$env:ENABLE_RERANKER='true'
+$env:EVAL_OUTPUT='results_reranker.json'
+.\.venv\Scripts\python.exe scripts\evaluate_rag.py
+```
+
+## Project Structure
+
+```text
+enterprise-rag/
+├── app.py
+├── requirements.txt
+├── .env.example
+├── samples/
+│   └── company_policy.txt
+├── scripts/
+│   ├── check_apis.py
+│   ├── check_reranker.py
+│   ├── evaluate_rag.py
+│   └── smoke_rag.py
+├── eval/
+│   ├── questions.json
+│   ├── comparison.md
+│   ├── results.json
+│   └── results_reranker.json
+├── docs/
+│   └── architecture.svg
+├── UPSTREAM.json
+└── LICENSE
+```
+
+## Design Decisions
+
+- DeepSeek handles Chat, relevance grading, and query rewriting through its
+  OpenAI-compatible API.
+- SiliconFlow provides a single API surface for BGE-M3 embeddings and the
+  optional BGE reranker.
+- Qdrant runs locally so the first version does not depend on a managed vector
+  database.
+- Tavily web search is disabled for the local-first version. The workflow can
+  still transform queries when retrieval grading fails.
+- Reranking is optional because the initial benchmark shows no accuracy gain on
+  the small sample corpus.
+
+## Roadmap
+
+- User accounts and tenant-level document isolation
+- Hybrid vector + BM25 retrieval
+- Larger evaluation set with multi-hop questions
+- Langfuse tracing and cost tracking
+- FastAPI streaming endpoint
+- Docker Compose deployment
+- Public hosted demo
+
+## Upstream and License
+
+This project is a derivative of:
+
+```text
+Shubhamsaboo/awesome-llm-apps
+rag_tutorials/corrective_rag
+License: Apache-2.0
+```
+
+The exact upstream commit and path are recorded in `UPSTREAM.json`. The original
+license is retained in `LICENSE`.

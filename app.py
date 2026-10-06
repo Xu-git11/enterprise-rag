@@ -1,4 +1,4 @@
-﻿"""
+"""
 Enterprise RAG - a derivative of the upstream Corrective RAG example.
 
 Upstream:
@@ -16,6 +16,7 @@ import json
 import os
 import re
 import tempfile
+import requests
 from pathlib import Path
 from typing import Any, Dict, TypedDict
 from urllib.parse import urlparse
@@ -57,6 +58,16 @@ ENABLE_WEB_SEARCH = os.getenv("ENABLE_WEB_SEARCH", "false").lower() in {
     "yes",
 }
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "").strip()
+ENABLE_RERANKER = os.getenv("ENABLE_RERANKER", "false").lower() in {
+    "1",
+    "true",
+    "yes",
+}
+RERANKER_MODEL = os.getenv(
+    "RERANKER_MODEL", "BAAI/bge-reranker-v2-m3"
+).strip()
+RETRIEVAL_TOP_K = int(os.getenv("RETRIEVAL_TOP_K", "10"))
+RERANK_TOP_N = int(os.getenv("RERANK_TOP_N", "5"))
 
 st.set_page_config(
     page_title="Enterprise RAG",
@@ -103,6 +114,41 @@ def get_qdrant_client() -> QdrantClient:
     return QdrantClient(url=QDRANT_URL, timeout=10)
 
 
+def rerank_documents(question: str, documents: list[Document]) -> list[Document]:
+    if not ENABLE_RERANKER or len(documents) <= 1:
+        return documents[:RERANK_TOP_N]
+
+    try:
+        response = requests.post(
+            f"{SILICONFLOW_BASE_URL}/rerank",
+            headers={
+                "Authorization": f"Bearer {SILICONFLOW_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": RERANKER_MODEL,
+                "query": question,
+                "documents": [document.page_content for document in documents],
+                "return_documents": False,
+                "top_n": min(RERANK_TOP_N, len(documents)),
+            },
+            timeout=60,
+        )
+        response.raise_for_status()
+        results = response.json().get("results", [])
+        reranked: list[Document] = []
+        for item in results:
+            index = int(item["index"])
+            if 0 <= index < len(documents):
+                document = documents[index]
+                document.metadata["rerank_score"] = item.get("relevance_score")
+                reranked.append(document)
+        return reranked or documents[:RERANK_TOP_N]
+    except Exception as exc:
+        print(f"Reranker fallback: {type(exc).__name__}: {exc}")
+        return documents[:RERANK_TOP_N]
+
+
 def source_label(document: Document) -> str:
     file_name = (
         document.metadata.get("file_name")
@@ -143,7 +189,9 @@ def render_sidebar() -> None:
         st.write(f"Embedding：`{EMBEDDING_MODEL}`")
         st.write(f"Qdrant：`{QDRANT_URL}`")
         web_status = "开启" if ENABLE_WEB_SEARCH else "关闭"
+        rerank_status = "开启" if ENABLE_RERANKER else "关闭"
         st.write(f"Web 搜索：`{web_status}`")
+        st.write(f"Reranker：`{rerank_status}`")
 
         missing = missing_configuration()
         if missing:
@@ -191,6 +239,7 @@ def retrieve(state: GraphState) -> GraphState:
     if retriever is None:
         return {"keys": {"documents": [], "question": question}}
     documents = retriever.invoke(question)
+    documents = rerank_documents(question, documents)
     return {"keys": {"documents": documents, "question": question}}
 
 
@@ -288,6 +337,7 @@ def generate(state: GraphState) -> GraphState:
                 "documents": [],
                 "question": question,
                 "generation": "根据当前知识库没有找到足够的信息，无法可靠回答该问题。",
+                "sources": [],
             }
         }
 
@@ -316,11 +366,13 @@ def generate(state: GraphState) -> GraphState:
     except Exception as exc:
         generation = f"生成回答时发生错误：{exc}"
 
+    sources = list(dict.fromkeys(source_label(document) for document in documents))
     return {
         "keys": {
             "documents": documents,
             "question": question,
             "generation": generation,
+            "sources": sources,
         }
     }
 
@@ -411,8 +463,8 @@ else:
 
 if docs and source_key and st.session_state.ingested_source != source_key:
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,
-        chunk_overlap=120,
+        chunk_size=300,
+        chunk_overlap=60,
         separators=["\n\n", "\n", "。", "！", "？", "；", "，", " ", ""],
     )
     splits = splitter.split_documents(docs)
@@ -439,7 +491,10 @@ if docs and source_key and st.session_state.ingested_source != source_key:
     with st.spinner("正在切分文档并生成向量..."):
         vectorstore.add_documents(splits)
 
-    st.session_state.retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+    effective_top_k = RETRIEVAL_TOP_K if ENABLE_RERANKER else RERANK_TOP_N
+    st.session_state.retriever = vectorstore.as_retriever(
+        search_kwargs={"k": effective_top_k}
+    )
     st.session_state.ingested_source = source_key
     st.success(f"已写入 {len(splits)} 个文档片段到 Qdrant。")
 
@@ -452,6 +507,7 @@ if user_question:
     else:
         inputs = {"keys": {"question": user_question}}
         final_generation: str | None = None
+        final_sources: list[str] = []
 
         with st.spinner("正在检索并生成回答..."):
             for output in app.stream(inputs):
@@ -467,6 +523,13 @@ if user_question:
                         )
                     if "generation" in value["keys"]:
                         final_generation = value["keys"]["generation"]
+                    if "sources" in value["keys"]:
+                        final_sources = value["keys"]["sources"]
 
         st.subheader("回答")
         st.write(final_generation or "没有生成回答。")
+
+        if final_sources:
+            st.subheader("检索来源")
+            for source in final_sources:
+                st.markdown(f"- `{source}`")

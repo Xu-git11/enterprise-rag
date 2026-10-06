@@ -1,0 +1,42 @@
+﻿[
+  {
+    "id": "annual_leave_3y",
+    "question": "正式员工入职满三年后，每年有多少天带薪年假？",
+    "expected_any": ["15", "十五"]
+  },
+  {
+    "id": "annual_leave_1y",
+    "question": "正式员工入职满一年后，每年有多少天带薪年假？",
+    "expected_any": ["10", "十"]
+  },
+  {
+    "id": "carry_over",
+    "question": "未使用的年假最多可以结转多少天到下一年的第一季度？",
+    "expected_any": ["5", "五"]
+  },
+  {
+    "id": "remote_days",
+    "question": "员工每周最多可以申请几天远程办公？",
+    "expected_any": ["2", "两"]
+  },
+  {
+    "id": "hotel_tier1",
+    "question": "国内一线城市出差住宿标准每晚不超过多少元？",
+    "expected_any": ["500", "五百"]
+  },
+  {
+    "id": "hotel_other",
+    "question": "国内其他城市出差住宿标准每晚不超过多少元？",
+    "expected_any": ["350", "三百五十"]
+  },
+  {
+    "id": "expense_deadline",
+    "question": "出差结束后多少个工作日内需要提交报销申请？",
+    "expected_any": ["10", "十"]
+  },
+  {
+    "id": "security_notify",
+    "question": "发现数据泄露风险后，应在多长时间内通知信息安全团队？",
+    "expected_any": ["30", "三十"]
+  }
+]
