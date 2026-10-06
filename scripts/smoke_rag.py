@@ -1,4 +1,4 @@
-﻿"""End-to-end smoke test for the local RAG core."""
+"""End-to-end smoke test for the local RAG core."""
 
 from __future__ import annotations
 

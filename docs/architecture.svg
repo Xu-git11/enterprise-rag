@@ -1,4 +1,4 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
   <defs>
     <style>
       .title { font: 700 30px Arial, sans-serif; fill: #0f172a; }
@@ -15,7 +15,7 @@
   </defs>
   <rect width="1200" height="720" fill="#f8fafc"/>
   <text x="60" y="62" class="title">Enterprise RAG Architecture</text>
-  <text x="60" y="90" class="subtitle">DeepSeek + SiliconFlow BGE-M3 + Qdrant + LangGraph + Streamlit</text>
+  <text x="60" y="90" class="subtitle">DeepSeek + SiliconFlow BGE-M3 + Qdrant + Hybrid Retrieval + LangGraph + optional Langfuse</text>
   <rect x="60" y="145" width="190" height="105" rx="18" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
   <text x="155" y="187" text-anchor="middle" class="box-title">User</text>
   <text x="155" y="216" text-anchor="middle" class="box-text">Upload document</text>
@@ -38,7 +38,7 @@
   <text x="445" y="434" text-anchor="middle" class="small">1024-dim embeddings</text>
   <rect x="640" y="340" width="250" height="125" rx="18" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
   <text x="765" y="381" text-anchor="middle" class="box-title">Qdrant</text>
-  <text x="765" y="411" text-anchor="middle" class="box-text">Vector storage and search</text>
+  <text x="765" y="411" text-anchor="middle" class="box-text">Vector storage + workspace filter</text>
   <text x="765" y="434" text-anchor="middle" class="small">local Docker service</text>
   <rect x="970" y="340" width="170" height="125" rx="18" fill="#f1f5f9" stroke="#64748b" stroke-width="2" class="optional"/>
   <text x="1055" y="381" text-anchor="middle" class="box-title">Reranker</text>

@@ -1,0 +1,184 @@
+{
+  "generated_at_utc": "2026-10-06T06:12:39.361003+00:00",
+  "dataset": "eval/questions.json",
+  "sample_document": "samples/company_policy.txt",
+  "reranker_enabled": true,
+  "hybrid_enabled": false,
+  "retrieval_top_k": 10,
+  "rerank_top_n": 5,
+  "chunk_count": 4,
+  "total_questions": 8,
+  "keyword_accuracy": 1.0,
+  "citation_rate": 1.0,
+  "average_latency_ms": 940.02,
+  "records": [
+    {
+      "id": "annual_leave_3y",
+      "question": "正式员工入职满三年后，每年有多少天带薪年假？",
+      "answer": "15 天。[星云科技员工制度测试文档（虚构示例） p.1]",
+      "expected_any": [
+        "15",
+        "十五"
+      ],
+      "keyword_hit": true,
+      "citation_present": true,
+      "latency_ms": 1125.43,
+      "rerank_scores": [
+        0.9982510209083557,
+        0.0031219383236020803,
+        0.0003353568317834288,
+        1.7176871551782824e-05
+      ],
+      "sources": [
+        "company_policy.txt"
+      ]
+    },
+    {
+      "id": "annual_leave_1y",
+      "question": "正式员工入职满一年后，每年有多少天带薪年假？",
+      "answer": "10 天。[星云科技员工制度测试文档（虚构示例） p.1]",
+      "expected_any": [
+        "10",
+        "十"
+      ],
+      "keyword_hit": true,
+      "citation_present": true,
+      "latency_ms": 850.42,
+      "rerank_scores": [
+        0.9981959462165833,
+        0.0030481580179184675,
+        0.00030007888562977314,
+        1.6792935639386997e-05
+      ],
+      "sources": [
+        "company_policy.txt"
+      ]
+    },
+    {
+      "id": "carry_over",
+      "question": "未使用的年假最多可以结转多少天到下一年的第一季度？",
+      "answer": "最多 5 天。[星云科技员工制度测试文档（虚构示例） p.1]",
+      "expected_any": [
+        "5",
+        "五"
+      ],
+      "keyword_hit": true,
+      "citation_present": true,
+      "latency_ms": 1155.8,
+      "rerank_scores": [
+        0.9834051132202148,
+        0.0006937723373994231,
+        0.0003615286841522902,
+        1.6344345567631535e-05
+      ],
+      "sources": [
+        "company_policy.txt"
+      ]
+    },
+    {
+      "id": "remote_days",
+      "question": "员工每周最多可以申请几天远程办公？",
+      "answer": "2 天 [星云科技员工制度测试文档（虚构示例） p.2]",
+      "expected_any": [
+        "2",
+        "两"
+      ],
+      "keyword_hit": true,
+      "citation_present": true,
+      "latency_ms": 770.55,
+      "rerank_scores": [
+        0.9961844086647034,
+        0.0007675589877180755,
+        0.00018886354519054294,
+        1.723766945360694e-05
+      ],
+      "sources": [
+        "company_policy.txt"
+      ]
+    },
+    {
+      "id": "hotel_tier1",
+      "question": "国内一线城市出差住宿标准每晚不超过多少元？",
+      "answer": "500 元 [星云科技员工制度测试文档（虚构示例） p.3]",
+      "expected_any": [
+        "500",
+        "五百"
+      ],
+      "keyword_hit": true,
+      "citation_present": true,
+      "latency_ms": 770.87,
+      "rerank_scores": [
+        0.9905771017074585,
+        3.4885353670688346e-05,
+        2.0180668798275292e-05,
+        1.6061594578786753e-05
+      ],
+      "sources": [
+        "company_policy.txt"
+      ]
+    },
+    {
+      "id": "hotel_other",
+      "question": "国内其他城市出差住宿标准每晚不超过多少元？",
+      "answer": "其他城市每晚不超过 350 元。[星云科技员工制度测试文档（虚构示例） p.1]",
+      "expected_any": [
+        "350",
+        "三百五十"
+      ],
+      "keyword_hit": true,
+      "citation_present": true,
+      "latency_ms": 1174.6,
+      "rerank_scores": [
+        0.9906310439109802,
+        2.6181127395830117e-05,
+        2.1843892682227306e-05,
+        1.603944656380918e-05
+      ],
+      "sources": [
+        "company_policy.txt"
+      ]
+    },
+    {
+      "id": "expense_deadline",
+      "question": "出差结束后多少个工作日内需要提交报销申请？",
+      "answer": "10 个工作日内。[星云科技员工制度测试文档（虚构示例） p.1]",
+      "expected_any": [
+        "10",
+        "十"
+      ],
+      "keyword_hit": true,
+      "citation_present": true,
+      "latency_ms": 872.57,
+      "rerank_scores": [
+        0.9839926362037659,
+        0.004013541620224714,
+        7.064432429615408e-05,
+        1.7012253010761924e-05
+      ],
+      "sources": [
+        "company_policy.txt"
+      ]
+    },
+    {
+      "id": "security_notify",
+      "question": "发现数据泄露风险后，应在多长时间内通知信息安全团队？",
+      "answer": "30 分钟内 [星云科技员工制度测试文档（虚构示例） p.1]",
+      "expected_any": [
+        "30",
+        "三十"
+      ],
+      "keyword_hit": true,
+      "citation_present": true,
+      "latency_ms": 799.94,
+      "rerank_scores": [
+        0.9946756362915039,
+        2.01100847334601e-05,
+        1.9767447156482376e-05,
+        1.620395232748706e-05
+      ],
+      "sources": [
+        "company_policy.txt"
+      ]
+    }
+  ]
+}

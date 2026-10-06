@@ -1,4 +1,4 @@
-﻿# Core dependencies
+# Core dependencies
 langchain==0.3.12
 langgraph==0.2.53
 qdrant-client==1.12.1
@@ -14,3 +14,5 @@ numpy>=1.24.0
 PyYAML>=6.0.0
 nest-asyncio>=1.5.0
 python-dotenv==1.2.3
+rank-bm25==0.2.2
+langfuse==2.60.10

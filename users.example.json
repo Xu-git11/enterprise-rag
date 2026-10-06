@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "username": "demo",
+      "display_name": "Demo User",
+      "workspace_id": "demo_workspace",
+      "salt": "852b6ec6e97972ec8980cc2bfd9e8637",
+      "password_hash": "bd5683f82ab1098ede48686e8305e76eaed4dfb2f991795d54e3bfe10a723b42"
+    },
+    {
+      "username": "analyst",
+      "display_name": "Analyst User",
+      "workspace_id": "analyst_workspace",
+      "salt": "f0d52fe7487e6f890bca464f5b117d6c",
+      "password_hash": "7fa38fe816c7ebca3b265f86900060414ded574d6baeb03300e49cd940657248"
+    }
+  ]
+}

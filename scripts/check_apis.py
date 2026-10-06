@@ -1,4 +1,4 @@
-﻿"""Check DeepSeek, SiliconFlow embedding, and Qdrant connectivity."""
+"""Check DeepSeek, SiliconFlow embedding, and Qdrant connectivity."""
 
 from __future__ import annotations
 

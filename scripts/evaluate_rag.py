@@ -1,4 +1,4 @@
-﻿"""Run a small repeatable RAG benchmark against the sample policy document."""
+"""Run a small repeatable RAG benchmark against the sample policy document."""
 
 from __future__ import annotations
 
@@ -22,8 +22,16 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 
 BASE_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(BASE_DIR))
+
+from rag_core import hybrid_retrieve, workspace_filter
 load_dotenv(BASE_DIR / ".env", override=False)
 ENABLE_RERANKER = os.getenv("ENABLE_RERANKER", "false").lower() in {
+    "1",
+    "true",
+    "yes",
+}
+ENABLE_HYBRID_SEARCH = os.getenv("ENABLE_HYBRID_SEARCH", "false").lower() in {
     "1",
     "true",
     "yes",
@@ -91,6 +99,8 @@ def main() -> int:
     ).load()
     for document in documents:
         document.metadata["file_name"] = "company_policy.txt"
+        document.metadata["workspace_id"] = "eval_workspace"
+        document.metadata["user_id"] = "eval"
 
     splits = RecursiveCharacterTextSplitter(
         chunk_size=180,
@@ -155,8 +165,30 @@ def main() -> int:
     try:
         for item in questions:
             started = time.perf_counter()
-            candidates = store.similarity_search(item["question"], k=retrieval_k)
-            retrieved = rerank_documents(item["question"], candidates)
+            retriever = store.as_retriever(
+                search_kwargs={
+                    "k": retrieval_k,
+                    "filter": workspace_filter("eval_workspace"),
+                }
+            )
+            vector_candidates = retriever.invoke(item["question"])
+            retrieved = hybrid_retrieve(
+                client=client,
+                collection_name=collection,
+                question=item["question"],
+                workspace_id="eval_workspace",
+                vector_candidates=vector_candidates,
+                vector_top_k=RETRIEVAL_TOP_K,
+                bm25_top_k=RETRIEVAL_TOP_K,
+                final_top_k=RERANK_TOP_N,
+                enable_hybrid=ENABLE_HYBRID_SEARCH,
+                enable_reranker=ENABLE_RERANKER,
+                reranker_model=RERANKER_MODEL,
+                siliconflow_api_key=require("SILICONFLOW_API_KEY"),
+                siliconflow_base_url=os.getenv(
+                    "SILICONFLOW_BASE_URL", "https://api.siliconflow.cn/v1"
+                ),
+            )
             context = "\n\n".join(document.page_content for document in retrieved)
             answer = chain.invoke(
                 {"context": context, "question": item["question"]}
@@ -200,6 +232,7 @@ def main() -> int:
         "dataset": "eval/questions.json",
         "sample_document": "samples/company_policy.txt",
         "reranker_enabled": ENABLE_RERANKER,
+        "hybrid_enabled": ENABLE_HYBRID_SEARCH,
         "retrieval_top_k": retrieval_k,
         "rerank_top_n": RERANK_TOP_N,
         "chunk_count": len(splits),

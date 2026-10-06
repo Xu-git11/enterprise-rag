@@ -1,4 +1,4 @@
-﻿"""Check SiliconFlow reranker connectivity."""
+"""Check SiliconFlow reranker connectivity."""
 
 from __future__ import annotations
 
