@@ -1,0 +1,13 @@
+{
+  "upstream_repository": "https://github.com/Shubhamsaboo/awesome-llm-apps",
+  "upstream_commit": "c62287849378babe255ebc4d8d76862389e3af3b",
+  "upstream_path": "rag_tutorials/corrective_rag",
+  "license": "Apache-2.0",
+  "downloaded_files": [
+    "README.md",
+    "requirements.txt",
+    "corrective_rag.py",
+    "LICENSE"
+  ],
+  "note": "Source files downloaded from the exact upstream commit for local reproduction."
+}
