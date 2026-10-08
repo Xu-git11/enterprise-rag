@@ -23,6 +23,23 @@ for embeddings, Qdrant for vector search, and Streamlit for the UI.
 - Secrets stored locally in `.env` and excluded from Git
 - Apache-2.0 derivative with upstream attribution
 
+## Screenshots
+
+### Login
+
+![Login screenshot](docs/screenshots/01-login.png)
+
+### Workspace dashboard
+
+![Workspace dashboard](docs/screenshots/02-dashboard.png)
+
+### Document upload and ingestion
+
+![Document ingestion](docs/screenshots/03-document-ingestion.png)
+
+### Grounded answer and sources
+
+![Grounded answer and sources](docs/screenshots/04-grounded-answer.png)
 ## Evaluation
 
 The benchmark uses `samples/company_policy.txt`, which is split into 4 chunks.

@@ -11,3 +11,4 @@ logs/
 qdrant_storage/
 docs/*.png
 docs/*.jpg
+docs/screenshots/
